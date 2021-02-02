@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 public class VendingMachine {
     private final Inventory<Coin> cashInventory = new Inventory<>();
     private final Inventory<Item> itemInventory = new Inventory<>();
@@ -22,19 +21,6 @@ public class VendingMachine {
 
     public VendingMachine() {
         initialize();
-    }
-
-    private void initialize() {
-        //initialize machine with 5 coins of each denomination
-        //and 5 cans of each Item
-        for (Coin c : Coin.values()) {
-            cashInventory.put(c, 5);
-        }
-
-        for (Item i : Item.values()) {
-            itemInventory.put(i, 5);
-        }
-
     }
 
     public long selectItemAndGetPrice(Item item) {
@@ -57,6 +43,28 @@ public class VendingMachine {
         List<Coin> change = collectChange();
 
         return new Bucket<>(item, change);
+    }
+
+    public List<Coin> refund() {
+        List<Coin> refund = getChange(currentBalance);
+        updateCashInventory(refund);
+        currentBalance = 0;
+        currentItem = null;
+        return refund;
+    }
+
+    public void reset() {
+        cashInventory.clear();
+        itemInventory.clear();
+        totalSales = 0;
+        currentItem = null;
+        currentBalance = 0;
+    }
+
+    public void printStats() {
+        System.out.println("Total Sales : " + totalSales);
+        System.out.println("Current Item Inventory : " + itemInventory);
+        System.out.println("Current Cash Inventory : " + cashInventory);
     }
 
     private Item collectItem() throws NotSufficientChangeException,
@@ -83,12 +91,8 @@ public class VendingMachine {
         return change;
     }
 
-    public List<Coin> refund() {
-        List<Coin> refund = getChange(currentBalance);
-        updateCashInventory(refund);
-        currentBalance = 0;
-        currentItem = null;
-        return refund;
+    private boolean hasSufficientChange() {
+        return hasSufficientChangeForAmount(currentBalance - currentItem.getPrice());
     }
 
     private boolean isFullPaid() {
@@ -127,24 +131,6 @@ public class VendingMachine {
         return changes;
     }
 
-    public void reset() {
-        cashInventory.clear();
-        itemInventory.clear();
-        totalSales = 0;
-        currentItem = null;
-        currentBalance = 0;
-    }
-
-    public void printStats() {
-        System.out.println("Total Sales : " + totalSales);
-        System.out.println("Current Item Inventory : " + itemInventory);
-        System.out.println("Current Cash Inventory : " + cashInventory);
-    }
-
-    private boolean hasSufficientChange() {
-        return hasSufficientChangeForAmount(currentBalance - currentItem.getPrice());
-    }
-
     private boolean hasSufficientChangeForAmount(long amount) {
         try {
             getChange(amount);
@@ -163,6 +149,19 @@ public class VendingMachine {
 
     public long getTotalSales() {
         return totalSales;
+    }
+
+    private void initialize() {
+        //initialize machine with 5 coins of each denomination
+        //and 5 cans of each Item
+        for (Coin c : Coin.values()) {
+            cashInventory.put(c, 5);
+        }
+
+        for (Item i : Item.values()) {
+            itemInventory.put(i, 5);
+        }
+
     }
 
 }
