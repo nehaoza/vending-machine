@@ -1,10 +1,12 @@
 package org.collinsongroup.service;
 
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 
 import org.collinsongroup.bean.Bucket;
 import org.collinsongroup.bean.Coin;
 import org.collinsongroup.bean.Inventory;
 import org.collinsongroup.bean.Item;
+import org.collinsongroup.exception.NotSufficientChangeException;
 import org.collinsongroup.exception.SoldOutException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,13 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -88,23 +89,71 @@ public class VendingMachineTest {
     Bucket<Item, List<Coin>> collectItems = vm.collectItemAndChange();
     assertEquals(item, collectItems.getFirst());
     assertEquals(0, collectItems.getSecond().size());
+    verifyInventoryAndCashUpdates(1);
   }
 
   @ParameterizedTest
   @EnumSource(Item.class)
-  @DisplayName("more inserted money and no change to give")
-  public void collectItemAndChange_withExtraNickleAmount(Item item) {
+  @DisplayName("more inserted money and return single change")
+  public void collectItemAndChange_withExtraAmount(Item item) {
 
     for(Coin coin: Coin.values()) {
+      System.out.println("running "+item.getName() +", coin -> "+coin.name());
       vm.setCurrentItem(item);
       vm.setCurrentBalance(item.getPrice() + coin.getDenomination());
       when(cashInventory.hasItem(any())).thenReturn(true);
+      doNothing().when(itemInventory).deduct(any());
 
       Bucket<Item, List<Coin>> collectItems = vm.collectItemAndChange();
       assertEquals(item, collectItems.getFirst());
       assertEquals(1, collectItems.getSecond().size());
       assertEquals(coin, collectItems.getSecond().get(0));
+
+      System.out.println("Ending---->running "+item.getName() +", coin -> "+coin.name());
     }
+    verifyInventoryAndCashUpdates(4);
+  }
+
+  @ParameterizedTest
+  @EnumSource(Item.class)
+  @DisplayName("more inserted money and return single change of all coins")
+  public void collectItemAndChange_withExtraAmount2(Item item) {
+      vm.setCurrentItem(item);
+      vm.setCurrentBalance(item.getPrice() + 41);
+      when(cashInventory.hasItem(any())).thenReturn(true);
+      List<Coin> expectedCoins = List.of(Coin.values());
+
+      Bucket<Item, List<Coin>> collectItems = vm.collectItemAndChange();
+      assertEquals(item, collectItems.getFirst());
+      assertEquals(4, collectItems.getSecond().size());
+
+      assertThat("List equality without order",
+          collectItems.getSecond(), containsInAnyOrder(expectedCoins.toArray()));
+
+    verifyInventoryAndCashUpdates(1);
+  }
+
+  @ParameterizedTest
+  @EnumSource(Item.class)
+  @DisplayName("more inserted money and the extra coin is not available to give back")
+  public void collectItemAndChange_withExtraAmount21(Item item) {
+
+    for(Coin coin: Coin.values()) {
+      vm.setCurrentItem(item);
+      vm.setCurrentBalance(item.getPrice() + coin.getDenomination());
+      when(cashInventory.hasItem(eq(coin))).thenReturn(false);
+
+      NotSufficientChangeException exception = assertThrows(NotSufficientChangeException.class, () -> {
+        vm.collectItemAndChange();
+      });
+      assertEquals("Not Sufficient change in Inventory", exception.getMessage());
+      verifyInventoryAndCashUpdates(0);
+    }
+  }
+
+  private void verifyInventoryAndCashUpdates(int count) {
+    verify(itemInventory, times(count)).deduct(any());
+    verify(cashInventory, times(count)).deduct(any());
   }
 
 }

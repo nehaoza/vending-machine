@@ -43,7 +43,9 @@ public class VendingMachine {
   }
 
   public Bucket<Item, List<Coin>> collectItemAndChange() {
+    System.out.println("before collect");
     Item item = collectItem();
+    System.out.println("after collect");
     totalSales = totalSales + currentItem.getPrice();
 
     List<Coin> change = collectChange();
@@ -97,6 +99,7 @@ public class VendingMachine {
       NotFullPaidException {
     if (isFullPaid()) {
       if (hasSufficientChange()) {
+        System.out.println("deducting --------- " + currentItem);
         itemInventory.deduct(currentItem);
         return currentItem;
       }
