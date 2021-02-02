@@ -1,14 +1,14 @@
 package org.collinsongroup.exception;
 
 public class NotSufficientChangeException extends RuntimeException {
-    private String message;
+    private final String message;
 
     public NotSufficientChangeException(String string) {
         this.message = string;
     }
 
     @Override
-    public String getMessage(){
+    public String getMessage() {
         return message;
     }
 

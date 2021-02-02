@@ -1,7 +1,7 @@
 package org.collinsongroup.exception;
 
 public class SoldOutException extends RuntimeException {
-    private String message;
+    private final String message;
 
     public SoldOutException(String string) {
         this.message = string;

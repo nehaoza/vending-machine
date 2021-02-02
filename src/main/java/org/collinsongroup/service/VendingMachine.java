@@ -1,4 +1,5 @@
 package org.collinsongroup.service;
+
 import org.collinsongroup.bean.Bucket;
 import org.collinsongroup.bean.Coin;
 import org.collinsongroup.bean.Inventory;
@@ -13,31 +14,31 @@ import java.util.List;
 
 
 public class VendingMachine {
-    private Inventory<Coin> cashInventory = new Inventory<Coin>();
-    private Inventory<Item> itemInventory = new Inventory<Item>();
+    private final Inventory<Coin> cashInventory = new Inventory<>();
+    private final Inventory<Item> itemInventory = new Inventory<>();
     private long totalSales;
     private Item currentItem;
     private long currentBalance;
 
-    public VendingMachine(){
+    public VendingMachine() {
         initialize();
     }
 
-    private void initialize(){
+    private void initialize() {
         //initialize machine with 5 coins of each denomination
         //and 5 cans of each Item
-        for(Coin c : Coin.values()){
+        for (Coin c : Coin.values()) {
             cashInventory.put(c, 5);
         }
 
-        for(Item i : Item.values()){
+        for (Item i : Item.values()) {
             itemInventory.put(i, 5);
         }
 
     }
 
     public long selectItemAndGetPrice(Item item) {
-        if(itemInventory.hasItem(item)){
+        if (itemInventory.hasItem(item)) {
             currentItem = item;
             return currentItem.getPrice();
         }
@@ -55,13 +56,13 @@ public class VendingMachine {
 
         List<Coin> change = collectChange();
 
-        return new Bucket<Item, List<Coin>>(item, change);
+        return new Bucket<>(item, change);
     }
 
     private Item collectItem() throws NotSufficientChangeException,
             NotFullPaidException {
-        if(isFullPaid()){
-            if(hasSufficientChange()){
+        if (isFullPaid()) {
+            if (hasSufficientChange()) {
                 itemInventory.deduct(currentItem);
                 return currentItem;
             }
@@ -82,7 +83,7 @@ public class VendingMachine {
         return change;
     }
 
-    public List<Coin> refund(){
+    public List<Coin> refund() {
         List<Coin> refund = getChange(currentBalance);
         updateCashInventory(refund);
         currentBalance = 0;
@@ -91,44 +92,33 @@ public class VendingMachine {
     }
 
     private boolean isFullPaid() {
-        if(currentBalance >= currentItem.getPrice()){
-            return true;
-        }
-        return false;
+        return currentBalance >= currentItem.getPrice();
     }
 
-    private List<Coin> getChange(long amount) throws NotSufficientChangeException{
+    private List<Coin> getChange(long amount) throws NotSufficientChangeException {
         List<Coin> changes = Collections.EMPTY_LIST;
 
-        if(amount > 0){
-            changes = new ArrayList<Coin>();
+        if (amount > 0) {
+            changes = new ArrayList<>();
             long balance = amount;
-            while(balance > 0){
-                if(balance >= Coin.QUARTER.getDenomination()
-                        && cashInventory.hasItem(Coin.QUARTER)){
+            while (balance > 0) {
+                if (balance >= Coin.QUARTER.getDenomination()
+                        && cashInventory.hasItem(Coin.QUARTER)) {
                     changes.add(Coin.QUARTER);
                     balance = balance - Coin.QUARTER.getDenomination();
-                    continue;
-
-                }else if(balance >= Coin.DIME.getDenomination()
+                } else if (balance >= Coin.DIME.getDenomination()
                         && cashInventory.hasItem(Coin.DIME)) {
                     changes.add(Coin.DIME);
                     balance = balance - Coin.DIME.getDenomination();
-                    continue;
-
-                }else if(balance >= Coin.NICKLE.getDenomination()
+                } else if (balance >= Coin.NICKLE.getDenomination()
                         && cashInventory.hasItem(Coin.NICKLE)) {
                     changes.add(Coin.NICKLE);
                     balance = balance - Coin.NICKLE.getDenomination();
-                    continue;
-
-                }else if(balance >= Coin.PENNY.getDenomination()
+                } else if (balance >= Coin.PENNY.getDenomination()
                         && cashInventory.hasItem(Coin.PENNY)) {
                     changes.add(Coin.PENNY);
                     balance = balance - Coin.PENNY.getDenomination();
-                    continue;
-
-                }else{
+                } else {
                     throw new NotSufficientChangeException("NotSufficientChange, Please try another product");
                 }
             }
@@ -137,7 +127,7 @@ public class VendingMachine {
         return changes;
     }
 
-    public void reset(){
+    public void reset() {
         cashInventory.clear();
         itemInventory.clear();
         totalSales = 0;
@@ -145,35 +135,33 @@ public class VendingMachine {
         currentBalance = 0;
     }
 
-    public void printStats(){
+    public void printStats() {
         System.out.println("Total Sales : " + totalSales);
         System.out.println("Current Item Inventory : " + itemInventory);
         System.out.println("Current Cash Inventory : " + cashInventory);
     }
 
-
-    private boolean hasSufficientChange(){
+    private boolean hasSufficientChange() {
         return hasSufficientChangeForAmount(currentBalance - currentItem.getPrice());
     }
 
-    private boolean hasSufficientChangeForAmount(long amount){
-        boolean hasChange = true;
-        try{
+    private boolean hasSufficientChangeForAmount(long amount) {
+        try {
             getChange(amount);
-        }catch(NotSufficientChangeException nsce){
-            return hasChange = false;
+        } catch (NotSufficientChangeException e) {
+            return false;
         }
 
-        return hasChange;
+        return true;
     }
 
     private void updateCashInventory(List<Coin> change) {
-        for(Coin c : change){
+        for (Coin c : change) {
             cashInventory.deduct(c);
         }
     }
 
-    public long getTotalSales(){
+    public long getTotalSales() {
         return totalSales;
     }
 

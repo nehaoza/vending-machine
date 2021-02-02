@@ -1,8 +1,8 @@
 package org.collinsongroup.bean;
 
 public class Bucket<E1, E2> {
-    private E1 first;
-    private E2 second;
+    private final E1 first;
+    private final E2 second;
 
     public Bucket(E1 first, E2 second) {
         this.first = first;
