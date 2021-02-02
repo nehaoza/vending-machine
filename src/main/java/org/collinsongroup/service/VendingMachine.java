@@ -73,6 +73,26 @@ public class VendingMachine {
     System.out.println("Current Cash Inventory : " + cashInventory);
   }
 
+  public void setTotalSales(long totalSales) {
+    this.totalSales = totalSales;
+  }
+
+  public Item getCurrentItem() {
+    return currentItem;
+  }
+
+  public void setCurrentItem(Item currentItem) {
+    this.currentItem = currentItem;
+  }
+
+  public long getCurrentBalance() {
+    return currentBalance;
+  }
+
+  public void setCurrentBalance(long currentBalance) {
+    this.currentBalance = currentBalance;
+  }
+
   private Item collectItem() throws NotSufficientChangeException,
       NotFullPaidException {
     if (isFullPaid()) {
@@ -169,5 +189,7 @@ public class VendingMachine {
     }
 
   }
+
+
 
 }
