@@ -90,7 +90,6 @@ public class VendingMachineTest {
     Bucket<Item, List<Coin>> collectItems = vm.collectItemAndChange();
     assertEquals(item, collectItems.getFirst());
     assertEquals(0, collectItems.getSecond().size());
-    verifyInventoryAndCashUpdates(1);
   }
 
   @ParameterizedTest
