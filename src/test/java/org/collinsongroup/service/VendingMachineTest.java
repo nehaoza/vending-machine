@@ -98,7 +98,6 @@ public class VendingMachineTest {
   public void collectItemAndChange_withExtraAmount(Item item) {
 
     for (Coin coin : Coin.values()) {
-      System.out.println("running " + item.getName() + ", coin -> " + coin.name());
       vm.setCurrentItem(item);
       vm.setCurrentBalance(item.getPrice() + coin.getDenomination());
       when(cashInventory.hasItem(any())).thenReturn(true);
@@ -108,8 +107,6 @@ public class VendingMachineTest {
       assertEquals(item, collectItems.getFirst());
       assertEquals(1, collectItems.getSecond().size());
       assertEquals(coin, collectItems.getSecond().get(0));
-
-      System.out.println("Ending---->running " + item.getName() + ", coin -> " + coin.name());
     }
     verifyInventoryAndCashUpdates(4);
   }
