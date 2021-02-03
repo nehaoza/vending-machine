@@ -6,6 +6,7 @@ import org.collinsongroup.bean.Bucket;
 import org.collinsongroup.bean.Coin;
 import org.collinsongroup.bean.Inventory;
 import org.collinsongroup.bean.Item;
+import org.collinsongroup.exception.NotFullPaidException;
 import org.collinsongroup.exception.NotSufficientChangeException;
 import org.collinsongroup.exception.SoldOutException;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,8 +130,6 @@ public class VendingMachineTest {
 
       assertThat("List equality without order",
           collectItems.getSecond(), containsInAnyOrder(expectedCoins.toArray()));
-
-    verifyInventoryAndCashUpdates(1);
   }
 
   @ParameterizedTest
@@ -149,6 +148,36 @@ public class VendingMachineTest {
       assertEquals("Not Sufficient change in Inventory", exception.getMessage());
       verifyInventoryAndCashUpdates(0);
     }
+  }
+
+  @ParameterizedTest
+  @EnumSource(Item.class)
+  @DisplayName("more inserted money and return single change of all coins")
+  public void collectItemAndChange_withRemainingAmount_throws_NotFullPaidException(Item item) {
+    vm.setCurrentItem(item);
+    vm.setCurrentBalance(item.getPrice() - 1);
+
+    NotFullPaidException exception = assertThrows(NotFullPaidException.class, () -> {
+      vm.collectItemAndChange();
+    });
+    assertEquals("Price not full paid, remaining : 1", exception.getMessage());
+    verifyInventoryAndCashUpdates(0);
+  }
+
+  @Test
+  public void reset() {
+    vm.reset();
+    verify(itemInventory,times(1)).clear();
+    verify(cashInventory,times(1)).clear();
+    assertNull(vm.getCurrentItem());
+    assertEquals(0, vm.getTotalSales());
+    assertEquals(0, vm.getCurrentBalance());
+  }
+
+
+  @Test
+  public void refund() {
+
   }
 
   private void verifyInventoryAndCashUpdates(int count) {
