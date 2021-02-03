@@ -152,7 +152,7 @@ public class VendingMachine {
           changes.add(Coin.PENNY);
           balance = balance - Coin.PENNY.getDenomination();
         } else {
-          throw new NotSufficientChangeException("NotSufficientChange, Please try another product");
+          throw new NotSufficientChangeException("Not Sufficient change in Inventory, Please buy another product");
         }
       }
     }
@@ -192,7 +192,5 @@ public class VendingMachine {
     }
 
   }
-
-
 
 }

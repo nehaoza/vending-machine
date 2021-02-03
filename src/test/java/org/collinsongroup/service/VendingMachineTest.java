@@ -1,7 +1,5 @@
 package org.collinsongroup.service;
 
-import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-
 import org.collinsongroup.bean.Bucket;
 import org.collinsongroup.bean.Coin;
 import org.collinsongroup.bean.Inventory;
@@ -20,7 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -97,8 +97,8 @@ public class VendingMachineTest {
   @DisplayName("more inserted money and return single change")
   public void collectItemAndChange_withExtraAmount(Item item) {
 
-    for(Coin coin: Coin.values()) {
-      System.out.println("running "+item.getName() +", coin -> "+coin.name());
+    for (Coin coin : Coin.values()) {
+      System.out.println("running " + item.getName() + ", coin -> " + coin.name());
       vm.setCurrentItem(item);
       vm.setCurrentBalance(item.getPrice() + coin.getDenomination());
       when(cashInventory.hasItem(any())).thenReturn(true);
@@ -109,7 +109,7 @@ public class VendingMachineTest {
       assertEquals(1, collectItems.getSecond().size());
       assertEquals(coin, collectItems.getSecond().get(0));
 
-      System.out.println("Ending---->running "+item.getName() +", coin -> "+coin.name());
+      System.out.println("Ending---->running " + item.getName() + ", coin -> " + coin.name());
     }
     verifyInventoryAndCashUpdates(4);
   }
@@ -118,17 +118,17 @@ public class VendingMachineTest {
   @EnumSource(Item.class)
   @DisplayName("more inserted money and return single change of all coins")
   public void collectItemAndChange_withExtraAmount2(Item item) {
-      vm.setCurrentItem(item);
-      vm.setCurrentBalance(item.getPrice() + 41);
-      when(cashInventory.hasItem(any())).thenReturn(true);
-      List<Coin> expectedCoins = List.of(Coin.values());
+    vm.setCurrentItem(item);
+    vm.setCurrentBalance(item.getPrice() + 41);
+    when(cashInventory.hasItem(any())).thenReturn(true);
+    List<Coin> expectedCoins = List.of(Coin.values());
 
-      Bucket<Item, List<Coin>> collectItems = vm.collectItemAndChange();
-      assertEquals(item, collectItems.getFirst());
-      assertEquals(4, collectItems.getSecond().size());
+    Bucket<Item, List<Coin>> collectItems = vm.collectItemAndChange();
+    assertEquals(item, collectItems.getFirst());
+    assertEquals(4, collectItems.getSecond().size());
 
-      assertThat("List equality without order",
-          collectItems.getSecond(), containsInAnyOrder(expectedCoins.toArray()));
+    assertThat("List equality without order",
+        collectItems.getSecond(), containsInAnyOrder(expectedCoins.toArray()));
   }
 
   @ParameterizedTest
@@ -136,7 +136,7 @@ public class VendingMachineTest {
   @DisplayName("more inserted money and the extra coin is not available to give back")
   public void collectItemAndChange_withExtraAmount21(Item item) {
 
-    for(Coin coin: Coin.values()) {
+    for (Coin coin : Coin.values()) {
       vm.setCurrentItem(item);
       vm.setCurrentBalance(item.getPrice() + coin.getDenomination());
       when(cashInventory.hasItem(eq(coin))).thenReturn(false);
@@ -166,8 +166,8 @@ public class VendingMachineTest {
   @Test
   public void reset() {
     vm.reset();
-    verify(itemInventory,times(1)).clear();
-    verify(cashInventory,times(1)).clear();
+    verify(itemInventory, times(1)).clear();
+    verify(cashInventory, times(1)).clear();
     assertNull(vm.getCurrentItem());
     assertEquals(0, vm.getTotalSales());
     assertEquals(0, vm.getCurrentBalance());
@@ -175,8 +175,30 @@ public class VendingMachineTest {
 
 
   @Test
-  public void refund() {
+  public void refund_when_noCashAvailableInInventory() {
+    Item item = Item.PEPSI;
+    vm.setCurrentItem(item);
+    vm.setCurrentBalance(item.getPrice());
+    when(cashInventory.hasItem(any())).thenReturn(false);
 
+    NotSufficientChangeException exception = assertThrows(NotSufficientChangeException.class, () -> {
+      vm.refund();
+    });
+    assertEquals("Not Sufficient change in Inventory, Please buy another product", exception.getMessage());
+  }
+
+  @ParameterizedTest
+  @EnumSource(Item.class)
+  public void refund_when_correctAmountOfChangeIsAvailable(Item item) {
+    vm.setCurrentItem(item);
+    vm.setCurrentBalance(item.getPrice());
+    when(cashInventory.hasItem(any())).thenReturn(true);
+    List<Coin> actualCoins = vm.refund();
+    long total = actualCoins.stream()
+        .mapToInt(coin -> coin.getDenomination())
+        .sum();
+
+    assertEquals(total, item.getPrice());
   }
 
   private void verifyInventoryAndCashUpdates(int count) {
