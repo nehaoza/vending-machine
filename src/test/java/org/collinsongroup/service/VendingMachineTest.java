@@ -206,4 +206,9 @@ public class VendingMachineTest {
     verify(cashInventory, times(count)).deduct(any());
   }
 
+  @Test
+  public void p() {
+    vm.printStats();
+  }
+
 }

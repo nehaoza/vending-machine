@@ -7,12 +7,15 @@ import org.collinsongroup.bean.Item;
 import org.collinsongroup.exception.NotFullPaidException;
 import org.collinsongroup.exception.NotSufficientChangeException;
 import org.collinsongroup.exception.SoldOutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class VendingMachine {
+  private static Logger logger = LoggerFactory.getLogger(VendingMachine.class);
   private final Inventory<Coin> cashInventory;
   private final Inventory<Item> itemInventory;
   private long totalSales;
@@ -70,9 +73,9 @@ public class VendingMachine {
   }
 
   public void printStats() {
-    System.out.println("Total Sales : " + totalSales);
-    System.out.println("Current Item Inventory : " + itemInventory);
-    System.out.println("Current Cash Inventory : " + cashInventory);
+    logger.debug("Total Sales : {}", totalSales);
+    logger.debug("Current Item Inventory : {}", itemInventory);
+    logger.debug("Current Cash Inventory : {}", cashInventory);
   }
 
   public void setTotalSales(long totalSales) {
