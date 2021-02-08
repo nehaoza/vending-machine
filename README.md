@@ -37,6 +37,8 @@ Sample commit link - https://github.com/nehaoza/vending-machine/commit/f07bfec2f
 2. When Merge request is raised against main branch
 Sampel PR link - https://github.com/nehaoza/vending-machine/pull/1
 
+GitHub Actions flow - https://github.com/nehaoza/vending-machine/runs/1853621233?check_suite_focus=true
+
 ## **What it does?**
 1. Compiles and builds the code
 2. Runs automation suitein GitHub Actions container
