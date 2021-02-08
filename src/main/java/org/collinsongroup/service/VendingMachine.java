@@ -76,10 +76,6 @@ public class VendingMachine {
     logger.debug("Current Cash Inventory : {}", cashInventory);
   }
 
-  public void setTotalSales(long totalSales) {
-    this.totalSales = totalSales;
-  }
-
   public Item getCurrentItem() {
     return currentItem;
   }
