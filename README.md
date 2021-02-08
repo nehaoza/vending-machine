@@ -33,7 +33,9 @@ mvn clean test
 
 ## **When it triggers?**
 1. WHen commited to main branch
+Sample commit link - https://github.com/nehaoza/vending-machine/commit/f07bfec2f2613eb85d37a8c5fe2f844a6622fc58
 2. When Merge request is raised against main branch
+Sampel PR link - https://github.com/nehaoza/vending-machine/pull/1
 
 ## **What it does?**
 1. Compiles and builds the code
