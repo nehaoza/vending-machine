@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class VendingMachineTest {
+class VendingMachineTest {
 
   @Mock
   VendingMachine vm;
@@ -38,26 +38,22 @@ public class VendingMachineTest {
   Inventory<Item> itemInventory;
 
   @BeforeEach
-  public void init() {
+  void init() {
     vm = new VendingMachine(cashInventory, itemInventory);
   }
 
   @Test
   @DisplayName(value = "hello")
-  public void selectItemAndGetPrice_withInvalidItem() {
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-      vm.selectItemAndGetPrice(null);
-    });
+  void selectItemAndGetPrice_withInvalidItem() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> vm.selectItemAndGetPrice(null));
     assertEquals("Please provide a valid Item to buy", exception.getMessage());
   }
 
   @Test
-  public void selectItemAndGetPrice_whenItemIsNotAvailable() {
-    when(itemInventory.hasItem(eq(Item.COKE))).thenReturn(false);
+  void selectItemAndGetPrice_whenItemIsNotAvailable() {
+    when(itemInventory.hasItem(Item.COKE)).thenReturn(false);
 
-    SoldOutException exception = assertThrows(SoldOutException.class, () -> {
-      vm.selectItemAndGetPrice(Item.COKE);
-    });
+    SoldOutException exception = assertThrows(SoldOutException.class, () -> vm.selectItemAndGetPrice(Item.COKE));
     assertEquals("Sold Out, Please buy another item", exception.getMessage());
 
     verify(itemInventory, times(1)).hasItem(any());
@@ -65,8 +61,8 @@ public class VendingMachineTest {
 
   @ParameterizedTest
   @EnumSource(Item.class)
-  public void selectItemAndGetPrice_withValidItem(Item item) {
-    when(itemInventory.hasItem(eq(item))).thenReturn(true);
+  void selectItemAndGetPrice_withValidItem(Item item) {
+    when(itemInventory.hasItem(item)).thenReturn(true);
 
     long itemPrice = vm.selectItemAndGetPrice(item);
     assertEquals(itemPrice, item.getPrice());
@@ -75,7 +71,7 @@ public class VendingMachineTest {
 
   @ParameterizedTest
   @EnumSource(Coin.class)
-  public void insertCoin_withValidCoins(Coin coin) {
+  void insertCoin_withValidCoins(Coin coin) {
     vm.setCurrentBalance(10);
     vm.insertCoin(coin);
     assertEquals(10 + coin.getDenomination(), vm.getCurrentBalance());
@@ -83,7 +79,7 @@ public class VendingMachineTest {
 
   @ParameterizedTest
   @EnumSource(Item.class)
-  public void collectItemAndChange_withExactAmount(Item item) {
+  void collectItemAndChange_withExactAmount(Item item) {
     vm.setCurrentItem(item);
     vm.setCurrentBalance(item.getPrice());
     cashInventory.put(Coin.QUARTER, 1);
@@ -95,7 +91,7 @@ public class VendingMachineTest {
   @ParameterizedTest
   @EnumSource(Item.class)
   @DisplayName("more inserted money and return single change")
-  public void collectItemAndChange_withExtraAmount(Item item) {
+  void collectItemAndChange_withExtraAmount(Item item) {
 
     for (Coin coin : Coin.values()) {
       vm.setCurrentItem(item);
@@ -114,7 +110,7 @@ public class VendingMachineTest {
   @ParameterizedTest
   @EnumSource(Item.class)
   @DisplayName("more inserted money and return single change of all coins")
-  public void collectItemAndChange_withExtraAmount2(Item item) {
+  void collectItemAndChange_withExtraAmount2(Item item) {
     vm.setCurrentItem(item);
     vm.setCurrentBalance(item.getPrice() + 41);
     when(cashInventory.hasItem(any())).thenReturn(true);
@@ -131,16 +127,14 @@ public class VendingMachineTest {
   @ParameterizedTest
   @EnumSource(Item.class)
   @DisplayName("more inserted money and the extra coin is not available to give back")
-  public void collectItemAndChange_withExtraAmount21(Item item) {
+  void collectItemAndChange_withExtraAmount21(Item item) {
 
     for (Coin coin : Coin.values()) {
       vm.setCurrentItem(item);
       vm.setCurrentBalance(item.getPrice() + coin.getDenomination());
-      when(cashInventory.hasItem(eq(coin))).thenReturn(false);
+      when(cashInventory.hasItem(coin)).thenReturn(false);
 
-      NotSufficientChangeException exception = assertThrows(NotSufficientChangeException.class, () -> {
-        vm.collectItemAndChange();
-      });
+      NotSufficientChangeException exception = assertThrows(NotSufficientChangeException.class, () -> vm.collectItemAndChange());
       assertEquals("Not Sufficient change in Inventory", exception.getMessage());
       verifyInventoryAndCashUpdates(0);
     }
@@ -149,19 +143,17 @@ public class VendingMachineTest {
   @ParameterizedTest
   @EnumSource(Item.class)
   @DisplayName("more inserted money and return single change of all coins")
-  public void collectItemAndChange_withRemainingAmount_throws_NotFullPaidException(Item item) {
+  void collectItemAndChange_withRemainingAmount_throws_NotFullPaidException(Item item) {
     vm.setCurrentItem(item);
     vm.setCurrentBalance(item.getPrice() - 1);
 
-    NotFullPaidException exception = assertThrows(NotFullPaidException.class, () -> {
-      vm.collectItemAndChange();
-    });
+    NotFullPaidException exception = assertThrows(NotFullPaidException.class, () -> vm.collectItemAndChange());
     assertEquals("Price not full paid, remaining : 1", exception.getMessage());
     verifyInventoryAndCashUpdates(0);
   }
 
   @Test
-  public void reset() {
+  void reset() {
     vm.reset();
     verify(itemInventory, times(1)).clear();
     verify(cashInventory, times(1)).clear();
@@ -172,27 +164,25 @@ public class VendingMachineTest {
 
 
   @Test
-  public void refund_when_noCashAvailableInInventory() {
+  void refund_when_noCashAvailableInInventory() {
     Item item = Item.PEPSI;
     vm.setCurrentItem(item);
     vm.setCurrentBalance(item.getPrice());
     when(cashInventory.hasItem(any())).thenReturn(false);
 
-    NotSufficientChangeException exception = assertThrows(NotSufficientChangeException.class, () -> {
-      vm.refund();
-    });
+    NotSufficientChangeException exception = assertThrows(NotSufficientChangeException.class, () -> vm.refund());
     assertEquals("Not Sufficient change in Inventory, Please buy another product", exception.getMessage());
   }
 
   @ParameterizedTest
   @EnumSource(Item.class)
-  public void refund_when_correctAmountOfChangeIsAvailable(Item item) {
+  void refund_when_correctAmountOfChangeIsAvailable(Item item) {
     vm.setCurrentItem(item);
     vm.setCurrentBalance(item.getPrice());
     when(cashInventory.hasItem(any())).thenReturn(true);
     List<Coin> actualCoins = vm.refund();
     long total = actualCoins.stream()
-        .mapToInt(coin -> coin.getDenomination())
+        .mapToInt(Coin::getDenomination)
         .sum();
 
     assertEquals(total, item.getPrice());
@@ -201,11 +191,6 @@ public class VendingMachineTest {
   private void verifyInventoryAndCashUpdates(int count) {
     verify(itemInventory, times(count)).deduct(any());
     verify(cashInventory, times(count)).deduct(any());
-  }
-
-  @Test
-  public void p() {
-    vm.printStats();
   }
 
 }

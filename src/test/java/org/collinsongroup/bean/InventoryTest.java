@@ -9,18 +9,18 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
-public class InventoryTest {
+class InventoryTest {
 
   Inventory<Item> inventory;
 
   @BeforeEach
-  public void init() {
+  void init() {
     inventory = new Inventory<>();
   }
 
   @ParameterizedTest
   @EnumSource(Item.class)
-  public void add_itemsQuantity(Item item) {
+  void add_itemsQuantity(Item item) {
     inventory.put(item, 1);
     inventory.add(item);
     assertEquals(2, inventory.getQuantity(item));
@@ -28,7 +28,7 @@ public class InventoryTest {
 
   @ParameterizedTest
   @EnumSource(Item.class)
-  public void deduct_withAllItems(Item item) {
+  void deduct_withAllItems(Item item) {
     inventory.put(item, 1);
     inventory.add(item);
     inventory.deduct(item);
@@ -36,7 +36,7 @@ public class InventoryTest {
   }
 
   @Test
-  public void clear_withAllItems() {
+  void clear_withAllItems() {
     Arrays.stream(Item.values()).forEach(item-> inventory.put(item, 1));
     inventory.clear();
     Arrays.stream(Item.values()).forEach(item-> assertFalse(inventory.hasItem(item)));
@@ -45,7 +45,7 @@ public class InventoryTest {
 
   @ParameterizedTest
   @EnumSource(Item.class)
-  public void testPutAnGetQuantity(Item item) {
+  void testPutAnGetQuantity(Item item) {
     inventory.put(item, 5);
     assertEquals(5, inventory.getQuantity(item));
   }
